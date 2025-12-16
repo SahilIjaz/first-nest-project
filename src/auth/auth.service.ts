@@ -9,7 +9,7 @@ export class AuthService {
 
   async registerUser(registerUserDto: RegisterUserDto) {
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(registerUserDto.password, saltRounds);
+    const hashedPassword = bcrypt.hashSync(registerUserDto.password, saltRounds);
 
     try {
       const created = await this.userService.createUser({
@@ -33,7 +33,7 @@ export class AuthService {
     if (!user) {
       return null;
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) {
       return null;
     }
@@ -48,5 +48,32 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
     return validated;
+  }
+
+  async changePassword(email: string, oldPassword: string, newPassword: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const isPasswordValid = bcrypt.compareSync(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Old password is incorrect');
+    }
+
+    const saltRounds = 10;
+    const newHashed = bcrypt.hashSync(newPassword, saltRounds);
+    const updated = await this.userService.updatePassword(email, newHashed);
+    if (!updated) {
+      throw new BadRequestException('Failed to update password');
+    }
+    const obj = (updated as any).toObject ? (updated as any).toObject() : (updated as any);
+    const { password: _pw, ...safe } = obj as any;
+    return safe;
+  }
+
+  async logout() {
+    // stateless placeholder: if you later use JWT or sessions, invalidate token/session here
+    return { message: 'Logged out' };
   }
 }

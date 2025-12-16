@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -15,6 +16,16 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
+  }
+
+  @Post('change-password')
+  async changePassword(@Body() body: ChangePasswordDto) {
+    return this.authService.changePassword(body.email, body.oldPassword, body.newPassword);
+  }
+
+  @Post('logout')
+  async logout() {
+    return this.authService.logout();
   }
 
   @Post('login')

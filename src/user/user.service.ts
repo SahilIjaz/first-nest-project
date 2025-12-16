@@ -16,4 +16,10 @@ export class UserService {
     async findByEmail(email: string) {
         return this.userModel.findOne({ email }).select('+password').exec();
     }
+    
+    async updatePassword(email: string, newHashedPassword: string) {
+        return this.userModel
+          .findOneAndUpdate({ email }, { password: newHashedPassword }, { new: true })
+          .exec();
+    }
 }
